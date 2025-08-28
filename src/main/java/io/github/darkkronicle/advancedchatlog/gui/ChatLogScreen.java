@@ -303,7 +303,7 @@ public class ChatLogScreen extends GuiBase {
         );
         context.drawHoverEvent(textRenderer, getHoverStyle(mouseX, mouseY), mouseX, mouseY);
         if (menu != null) {
-            menu.render(mouseX, mouseY, true, context);
+            menu.render(context, mouseX, mouseY, true);
         }
     }
 
