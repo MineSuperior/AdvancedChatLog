@@ -122,7 +122,7 @@ public class ChatLogScreen extends GuiBase {
                 textRenderer,
                 (textFieldRunnable -> {
                     if (client.player != null) {
-                        client.player.sendMessage(Text.of(textFieldRunnable.getText()));
+                        client.player.sendMessage(Text.of(textFieldRunnable.getText()), false);
                     }
                     textFieldRunnable.setText("");
                 })
@@ -303,7 +303,7 @@ public class ChatLogScreen extends GuiBase {
         );
         context.drawHoverEvent(textRenderer, getHoverStyle(mouseX, mouseY), mouseX, mouseY);
         if (menu != null) {
-            menu.render(mouseX, mouseY, true, context);
+            menu.render(context, mouseX, mouseY, true);
         }
     }
 

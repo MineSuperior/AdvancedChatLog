@@ -7,7 +7,8 @@
  */
 package io.github.darkkronicle.advancedchatlog.util;
 
-import com.google.gson.JsonObject;
+import com.google.gson.*;
+import com.mojang.serialization.JsonOps;
 import io.github.darkkronicle.advancedchatcore.chat.ChatMessage;
 import io.github.darkkronicle.advancedchatcore.interfaces.IJsonSave;
 import io.github.darkkronicle.advancedchatlog.config.ChatLogConfigStorage;
@@ -17,14 +18,18 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
+import net.minecraft.registry.*;
+import net.minecraft.text.MutableText;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
+import net.minecraft.text.TextCodecs;
 
 @Environment(EnvType.CLIENT)
 public class LogChatMessageSerializer implements IJsonSave<LogChatMessage> {
 
-    private DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
+    final RegistryWrapper.WrapperLookup wrapperLookup = BuiltinRegistries.createWrapperLookup();
 
+    private DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
     public LogChatMessageSerializer() {}
 
     private Style cleanStyle(Style style) {
@@ -53,9 +58,10 @@ public class LogChatMessageSerializer implements IJsonSave<LogChatMessage> {
         LocalDate date = dateTime.toLocalDate();
         LocalTime time = dateTime.toLocalTime();
 
-        Text display = Text.Serialization.fromJson(obj.get("display").getAsString());
-        Text original = Text.Serialization.fromJson(obj.get("original").getAsString());
-        int stacks = obj.get("stacks").getAsByte();
+        Text display = fromJson(obj.get("display"), wrapperLookup);
+
+        Text original = fromJson(obj.get("original"), wrapperLookup);
+
         ChatMessage message =
                 ChatMessage.builder()
                         .time(time)
@@ -73,8 +79,16 @@ public class LogChatMessageSerializer implements IJsonSave<LogChatMessage> {
         LocalDateTime dateTime = LocalDateTime.of(message.getDate(), chat.getTime());
         json.addProperty("time", formatter.format(dateTime));
         json.addProperty("stacks", chat.getStacks());
-        json.add("display", Text.Serialization.toJsonTree(transfer(chat.getDisplayText())));
-        json.add("original", Text.Serialization.toJsonTree(transfer(chat.getOriginalText())));
+        json.add("display", toJson(transfer(chat.getDisplayText()), wrapperLookup));
+        json.add("original", toJson(transfer(chat.getOriginalText()), wrapperLookup));
         return json;
+    }
+
+    static JsonElement toJson(Text text, RegistryWrapper.WrapperLookup registries) {
+        return (JsonElement)TextCodecs.CODEC.encodeStart(registries.getOps(JsonOps.INSTANCE), text).getOrThrow(JsonParseException::new);
+    }
+
+    static MutableText fromJson(JsonElement json, RegistryWrapper.WrapperLookup registries) {
+        return (MutableText)TextCodecs.CODEC.parse(registries.getOps(JsonOps.INSTANCE), json).getOrThrow(JsonParseException::new);
     }
 }

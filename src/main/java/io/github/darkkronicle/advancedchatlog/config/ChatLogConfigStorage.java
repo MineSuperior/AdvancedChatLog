@@ -17,7 +17,6 @@ import fi.dy.masa.malilib.config.options.*;
 import fi.dy.masa.malilib.hotkeys.KeyAction;
 import fi.dy.masa.malilib.hotkeys.KeybindSettings;
 import fi.dy.masa.malilib.util.FileUtils;
-import fi.dy.masa.malilib.util.JsonUtils;
 import fi.dy.masa.malilib.util.StringUtils;
 import io.github.darkkronicle.advancedchatcore.config.ConfigStorage;
 import io.github.darkkronicle.advancedchatcore.config.SaveableConfig;
@@ -138,6 +137,7 @@ public class ChatLogConfigStorage implements IConfigHandler {
                 ImmutableList.of(OPEN_LOG);
     }
 
+    @SuppressWarnings("unchecked")
     public static void loadFromFile() {
         File configFile =
                 FileUtils.getConfigDirectory()
@@ -158,10 +158,10 @@ public class ChatLogConfigStorage implements IConfigHandler {
             if (element != null && element.isJsonObject()) {
                 JsonObject root = element.getAsJsonObject();
 
-                ConfigStorage.readOptions(root, General.NAME, (List<SaveableConfig<?>>) General.OPTIONS);
-                ConfigStorage.readOptions(root, Hotkeys.NAME, (List<SaveableConfig<?>>) Hotkeys.OPTIONS);
+                ConfigStorage.readOptions(root, General.NAME, (List<SaveableConfig<?>>) (List<?>) General.OPTIONS);
+                ConfigStorage.readOptions(root, Hotkeys.NAME, (List<SaveableConfig<?>>) (List<?>) Hotkeys.OPTIONS);
 
-                int version = JsonUtils.getIntegerOrDefault(root, "configVersion", 0);
+                // int version = JsonUtils.getIntegerOrDefault(root, "configVersion", 0);
             }
         }
 
@@ -187,8 +187,8 @@ public class ChatLogConfigStorage implements IConfigHandler {
         if ((dir.exists() && dir.isDirectory()) || dir.mkdirs()) {
             JsonObject root = new JsonObject();
 
-            ConfigStorage.writeOptions(root, General.NAME, (List<SaveableConfig<?>>) General.OPTIONS);
-            ConfigStorage.writeOptions(root, Hotkeys.NAME, (List<SaveableConfig<?>>) Hotkeys.OPTIONS);
+            ConfigStorage.writeOptions(root, General.NAME, (List<SaveableConfig<?>>) (List<?>) General.OPTIONS);
+            ConfigStorage.writeOptions(root, Hotkeys.NAME, (List<SaveableConfig<?>>) (List<?>) Hotkeys.OPTIONS);
 
             root.add("config_version", new JsonPrimitive(CONFIG_VERSION));
 
